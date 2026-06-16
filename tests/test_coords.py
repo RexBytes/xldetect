@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import pytest
-from hypothesis import given
-from hypothesis import strategies as st
+
+pytest.importorskip("hypothesis")
+from hypothesis import given  # noqa: E402
+from hypothesis import strategies as st  # noqa: E402
 
 from xldetect.coords import a1, a1_range, column_index, column_letter
 

@@ -34,10 +34,13 @@ def _format_region(index: int, region) -> list[str]:
         lines.append(f"    header row {region.header_row}: {cols}")
     else:
         lines.append("    header: none detected")
-    lines.append(
-        f"    data rows {region.data_start_row}-{region.max_row} "
-        f"({_plural(region.n_data_rows, 'row')} x {_plural(region.n_cols, 'col')})"
-    )
+    if region.n_data_rows >= 1:
+        lines.append(
+            f"    data rows {region.data_start_row}-{region.max_row} "
+            f"({_plural(region.n_data_rows, 'row')} x {_plural(region.n_cols, 'col')})"
+        )
+    else:
+        lines.append(f"    data rows: none ({_plural(region.n_cols, 'col')})")
     if region.decorative_rows:
         rows = ", ".join(str(r) for r in region.decorative_rows)
         lines.append(f"    decorative rows skipped: {rows}")
@@ -63,4 +66,6 @@ def format_text(report: WorkbookReport) -> str:
             lines.append("  (no data regions detected)")
         for i, region in enumerate(sheet.regions, start=1):
             lines.extend(_format_region(i, region))
+        for note in sheet.notes:
+            lines.append(f"  note: {note}")
     return "\n".join(lines)

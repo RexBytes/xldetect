@@ -9,10 +9,13 @@ segmentation logic rather than at defaults.
 
 from __future__ import annotations
 
-from hypothesis import given, settings
-from hypothesis import strategies as st
+import pytest
 
-from xldetect.detectors.regions import detect_regions
+pytest.importorskip("hypothesis")
+from hypothesis import given, settings  # noqa: E402
+from hypothesis import strategies as st  # noqa: E402
+
+from xldetect.detectors.regions import detect_regions  # noqa: E402
 
 cells_strategy = st.sets(
     st.tuples(st.integers(min_value=1, max_value=12), st.integers(min_value=1, max_value=12)),

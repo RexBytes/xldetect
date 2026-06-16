@@ -75,6 +75,30 @@ def test_unknown_file_returns_exit_code_1(capsys):
     assert "error" in capsys.readouterr().err
 
 
+def test_corrupt_workbook_returns_exit_code_1_without_traceback(tmp_path, capsys):
+    bad = tmp_path / "fake.xlsx"
+    bad.write_text("not an excel file")
+    rc = main(["inspect", str(bad)])
+    assert rc == 1
+    err = capsys.readouterr().err
+    assert err.startswith("xldetect: error:")
+    assert "Traceback" not in err
+
+
+def test_valid_min_blank_rows_runs(tmp_path, capsys):
+    path = _golden_workbook(tmp_path)
+    assert main(["inspect", path, "--min-blank-rows", "2"]) == 0
+    assert "Region" in capsys.readouterr().out
+
+
+@pytest.mark.parametrize("bad", ["0", "-1", "abc"])
+def test_invalid_min_blank_is_usage_error(tmp_path, bad):
+    path = _golden_workbook(tmp_path)
+    with pytest.raises(SystemExit) as exc:
+        main(["inspect", path, "--min-blank-rows", bad])
+    assert exc.value.code == 2  # argparse usage error
+
+
 def test_json_and_xlfilldown_are_mutually_exclusive(tmp_path):
     path = _golden_workbook(tmp_path)
     with pytest.raises(SystemExit):

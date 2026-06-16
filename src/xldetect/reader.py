@@ -11,9 +11,11 @@ as blank and never enter the grid.
 
 from __future__ import annotations
 
+import zipfile
 from pathlib import Path
 
 import openpyxl
+from openpyxl.utils.exceptions import InvalidFileException
 
 from .grid import CellStyle, Grid
 
@@ -85,8 +87,23 @@ def load_grids(
     Returns:
         A dict mapping sheet name to :class:`Grid`, preserving the requested
         (or workbook) order.
+
+    Raises:
+        ValueError: if the file is missing, not a valid ``.xlsx`` workbook
+            (corrupt, wrong format, not a zip), or names an unknown sheet. This
+            normalises openpyxl's lower-level exceptions so every caller -- the
+            CLI included -- sees a single, user-facing error type.
     """
-    wb = openpyxl.load_workbook(filename=str(path), data_only=True, read_only=False)
+    try:
+        wb = openpyxl.load_workbook(filename=str(path), data_only=True, read_only=False)
+    except FileNotFoundError as exc:
+        raise ValueError(f"File not found: {path}") from exc
+    except (InvalidFileException, zipfile.BadZipFile) as exc:
+        raise ValueError(
+            f"Not a readable .xlsx workbook ({path}): {exc}"
+        ) from exc
+    except OSError as exc:
+        raise ValueError(f"Could not open workbook ({path}): {exc}") from exc
     try:
         names = list(sheets) if sheets is not None else list(wb.sheetnames)
         out: dict[str, Grid] = {}

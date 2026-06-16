@@ -79,6 +79,15 @@ def test_min_blank_below_one_raises():
         detect_regions({(1, 1), (3, 1)}, min_blank_rows=0)
 
 
+def test_min_blank_validated_even_on_empty_input():
+    # Validation must not be data-dependent: a bad arg is rejected whether or not
+    # the sheet has content.
+    with pytest.raises(ValueError):
+        detect_regions(set(), min_blank_rows=0)
+    with pytest.raises(ValueError):
+        detect_regions(set(), min_blank_cols=0)
+
+
 def test_split_runs_basic():
     assert _split_runs([1, 2, 3], 1) == [(1, 3)]
     assert _split_runs([1, 3], 1) == [(1, 1), (3, 3)]

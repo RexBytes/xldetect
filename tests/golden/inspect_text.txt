@@ -1,14 +1,11 @@
 File: <FILE>
-Sheets: 1   Regions: 3
+Sheets: 1   Regions: 2
 
-Sheet 'Sheet1': 3 region(s), used range 9 rows x 2 cols, 1 merged range(s)
-  Region 1: A1:B1  (confidence 0.285)
-    header row 1: Sales Report, Sales Report
-    data rows 2-1 (0 rows x 2 cols)
-    merged ranges: 1
-  Region 2: A3:B5  (confidence 0.950)
+Sheet 'Sheet1': 2 region(s), used range 9 rows x 2 cols, 1 merged range(s)
+  Region 1: A3:B5  (confidence 0.950)
     header row 3: Name, Amount
     data rows 4-5 (2 rows x 2 cols)
-  Region 3: A8:B9  (confidence 0.870)
+  Region 2: A8:B9  (confidence 0.870)
     header row 8: Region, Total
     data rows 9-9 (1 row x 2 cols)
+  note: 1 decorative/no-data region(s) skipped: A1:B1

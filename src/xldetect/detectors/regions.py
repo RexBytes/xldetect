@@ -101,7 +101,18 @@ def detect_regions(
         region's bounds are tightened to its own occupied cells, so regions are
         disjoint and every occupied cell belongs to exactly one region. Returns
         an empty list for empty input.
+
+    Raises:
+        ValueError: if ``min_blank_rows`` or ``min_blank_cols`` is below 1. This
+            is validated up front, before the empty-input shortcut, so the same
+            bad argument is rejected consistently whether or not the sheet has
+            content.
     """
+    if min_blank_rows < 1 or min_blank_cols < 1:
+        raise ValueError(
+            f"min_blank_rows and min_blank_cols must be >= 1 "
+            f"(got rows={min_blank_rows}, cols={min_blank_cols})."
+        )
     if not occupied:
         return []
     atoms = _segment(set(occupied), min_blank_rows, min_blank_cols)
