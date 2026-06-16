@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "xldetect"
+version = "0.1.0"
+description = "Structural detection of table-like data regions, headers, and merged cells in Excel worksheets."
+readme = "README.md"
+license = { file = "LICENSE" }
+authors = [{ name = "RexBytes", email = "pythonic@rexbytes.com" }]
+requires-python = ">=3.11"
+keywords = ["excel", "xlsx", "openpyxl", "table detection", "header detection", "data region"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Office/Business :: Financial :: Spreadsheet",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = ["openpyxl>=3.1"]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.0", "pytest-cov", "hypothesis>=6.0", "xlfilldown>=1.0"]
+
+[project.scripts]
+xldetect = "xldetect.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/RexBytes/xldetect"
+Issues   = "https://github.com/RexBytes/xldetect/issues"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
