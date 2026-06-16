@@ -1,5 +1,7 @@
 # xldetect
 
+[![CI](https://github.com/RexBytes/xldetect/actions/workflows/ci.yml/badge.svg)](https://github.com/RexBytes/xldetect/actions/workflows/ci.yml)
+
 Structural detection of table-like **data regions**, **headers**, and **merged
 cells** in Excel worksheets. `xldetect` is the *discovery* step: it finds *where*
 the tables are so a processing step (like
