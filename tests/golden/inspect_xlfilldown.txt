@@ -1,0 +1,44 @@
+[
+  {
+    "caveats": [
+      "sheet 'Sheet1' has 3 regions; xlfilldown reads one header row to end-of-sheet -- extract each region separately first"
+    ],
+    "file": "<FILE>",
+    "fill_cols": [
+      "Sales Report",
+      "Sales Report"
+    ],
+    "header_row": 1,
+    "max_col": 2,
+    "min_col": 1,
+    "sheet": "Sheet1"
+  },
+  {
+    "caveats": [
+      "sheet 'Sheet1' has 3 regions; xlfilldown reads one header row to end-of-sheet -- extract each region separately first"
+    ],
+    "file": "<FILE>",
+    "fill_cols": [
+      "Name",
+      "Amount"
+    ],
+    "header_row": 3,
+    "max_col": 2,
+    "min_col": 1,
+    "sheet": "Sheet1"
+  },
+  {
+    "caveats": [
+      "sheet 'Sheet1' has 3 regions; xlfilldown reads one header row to end-of-sheet -- extract each region separately first"
+    ],
+    "file": "<FILE>",
+    "fill_cols": [
+      "Region",
+      "Total"
+    ],
+    "header_row": 8,
+    "max_col": 2,
+    "min_col": 1,
+    "sheet": "Sheet1"
+  }
+]

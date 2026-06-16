@@ -1,0 +1,113 @@
+{
+  "n_regions": 3,
+  "n_sheets": 1,
+  "path": "<FILE>",
+  "sheets": [
+    {
+      "max_col": 2,
+      "max_row": 9,
+      "merged_ranges": [
+        {
+          "max_col": 2,
+          "max_row": 1,
+          "min_col": 1,
+          "min_row": 1,
+          "n_cols": 2,
+          "n_rows": 1,
+          "range": "A1:B1",
+          "value": "Sales Report"
+        }
+      ],
+      "n_regions": 3,
+      "notes": [],
+      "regions": [
+        {
+          "confidence": 0.285,
+          "data_start_row": 2,
+          "decorative_rows": [],
+          "has_header": true,
+          "header_row": 1,
+          "header_rows": [
+            1
+          ],
+          "headers": [
+            "Sales Report",
+            "Sales Report"
+          ],
+          "max_col": 2,
+          "max_row": 1,
+          "merged_ranges": [
+            {
+              "max_col": 2,
+              "max_row": 1,
+              "min_col": 1,
+              "min_row": 1,
+              "n_cols": 2,
+              "n_rows": 1,
+              "range": "A1:B1",
+              "value": "Sales Report"
+            }
+          ],
+          "min_col": 1,
+          "min_row": 1,
+          "n_cols": 2,
+          "n_data_rows": 0,
+          "notes": [
+            "1 merged range(s) intersect this region"
+          ],
+          "range": "A1:B1",
+          "sheet": "Sheet1"
+        },
+        {
+          "confidence": 0.95,
+          "data_start_row": 4,
+          "decorative_rows": [],
+          "has_header": true,
+          "header_row": 3,
+          "header_rows": [
+            3
+          ],
+          "headers": [
+            "Name",
+            "Amount"
+          ],
+          "max_col": 2,
+          "max_row": 5,
+          "merged_ranges": [],
+          "min_col": 1,
+          "min_row": 3,
+          "n_cols": 2,
+          "n_data_rows": 2,
+          "notes": [],
+          "range": "A3:B5",
+          "sheet": "Sheet1"
+        },
+        {
+          "confidence": 0.87,
+          "data_start_row": 9,
+          "decorative_rows": [],
+          "has_header": true,
+          "header_row": 8,
+          "header_rows": [
+            8
+          ],
+          "headers": [
+            "Region",
+            "Total"
+          ],
+          "max_col": 2,
+          "max_row": 9,
+          "merged_ranges": [],
+          "min_col": 1,
+          "min_row": 8,
+          "n_cols": 2,
+          "n_data_rows": 1,
+          "notes": [],
+          "range": "A8:B9",
+          "sheet": "Sheet1"
+        }
+      ],
+      "sheet": "Sheet1"
+    }
+  ]
+}
