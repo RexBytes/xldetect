@@ -6,6 +6,7 @@ from conftest import grid_from_rows
 
 from xldetect.detectors.headers import detect_header, score_header_row
 from xldetect.detectors.regions import RawRegion
+from xldetect.grid import CellStyle
 
 
 def _region(rows):
@@ -74,19 +75,64 @@ def test_threshold_out_of_range_raises():
 # --- style cue redistribution ------------------------------------------------
 
 
-def test_undecorated_style_grid_scores_lower_than_content_only_grid():
+def _grid_with_styles(rows, styles):
+    """Build a grid from rows, then attach a {coord: CellStyle} overlay."""
+    g = grid_from_rows(rows)
+    g.styles.update(styles)
+    return g
+
+
+def test_style_presence_without_decoration_does_not_change_score():
+    # A grid that records styles but none are decorated must score identically to
+    # a grid with no style records at all -- "style metadata exists" is not
+    # "formatting evidence exists".
     rows = [["Name", "City"], ["Alice", 1], ["Bob", 2]]
     g_content = grid_from_rows(rows, styled=False)
-    g_styled = grid_from_rows(rows, styled=True)  # styles present but undecorated
+    g_styled = grid_from_rows(rows, styled=True)  # records present, none decorated
     r = RawRegion(1, 3, 1, 2)
-    s_content = score_header_row(g_content, r, 1, 2)
-    s_styled = score_header_row(g_styled, r, 1, 2)
-    # When styles exist but carry no decoration, the style cue contributes 0,
-    # so the styled grid scores strictly lower than the content-only grid.
-    assert s_styled < s_content
-    # Both still clear the default threshold for this clear header.
-    assert detect_header(g_content, r).has_header is True
-    assert detect_header(g_styled, r).has_header is True
+    assert score_header_row(g_content, r, 1, 2) == score_header_row(g_styled, r, 1, 2)
+
+
+def test_clean_plain_header_scores_same_as_clean_bold_header():
+    # The whole point: absence of formatting must not lower a clear header.
+    # Text labels over a fully numeric body -> both columns distinct -> base 1.0.
+    rows = [["Qty", "Cost"], [1, 10], [2, 20]]
+    r = RawRegion(1, 3, 1, 2)
+    g_plain = grid_from_rows(rows)
+    g_bold = _grid_with_styles(rows, {(1, 1): CellStyle(bold=True), (1, 2): CellStyle(bold=True)})
+    s_plain = score_header_row(g_plain, r, 1, 2)
+    s_bold = score_header_row(g_bold, r, 1, 2)
+    assert s_plain == s_bold == 1.0  # base already 1.0; bonus capped, never a penalty
+
+
+def test_style_bonus_lifts_a_borderline_header():
+    # Header whose content base is < 1.0 (only one distinct column) gets lifted by
+    # a bold contrast against a plain body.
+    rows = [["Name", "City"], ["Alice", "NYC"], ["Bob", "LA"]]  # all text -> distinct 0
+    r = RawRegion(1, 3, 1, 2)
+    g_plain = grid_from_rows(rows)
+    g_bold = _grid_with_styles(rows, {(1, 1): CellStyle(bold=True), (1, 2): CellStyle(bold=True)})
+    assert score_header_row(g_bold, r, 1, 2) > score_header_row(g_plain, r, 1, 2)
+
+
+def test_uniform_decoration_earns_no_bonus():
+    # Whole table bold -> bold is not discriminating -> bonus is 0.
+    rows = [["Name", "City"], ["Alice", "NYC"], ["Bob", "LA"]]
+    r = RawRegion(1, 3, 1, 2)
+    g_plain = grid_from_rows(rows)
+    bold_all = {(rr, cc): CellStyle(bold=True) for rr in range(1, 4) for cc in (1, 2)}
+    g_uniform = _grid_with_styles(rows, bold_all)
+    assert score_header_row(g_uniform, r, 1, 2) == score_header_row(g_plain, r, 1, 2)
+
+
+def test_decorated_body_does_not_penalize_plain_header():
+    # Finding #2: formatting in the body must not lower a plain header's score.
+    rows = [["Name", "City"], ["Alice", "NYC"], ["Bob", "LA"]]
+    r = RawRegion(1, 3, 1, 2)
+    g_plain = grid_from_rows(rows)
+    bold_body = {(rr, cc): CellStyle(bold=True) for rr in (2, 3) for cc in (1, 2)}
+    g_bold_body = _grid_with_styles(rows, bold_body)
+    assert score_header_row(g_bold_body, r, 1, 2) == score_header_row(g_plain, r, 1, 2)
 
 
 # --- multi-row headers and label extraction ----------------------------------

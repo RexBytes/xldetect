@@ -111,6 +111,35 @@ def test_inspect_second_table_detected(messy_workbook):
     assert second.range_a1 == "A8:B9"
 
 
+def test_unstyled_table_scores_as_well_as_styled_table_on_same_sheet(tmp_path):
+    # Workbook-level regression: a sheet with a BOLD-headed first table and a
+    # completely UNSTYLED second table. The unstyled table must not be penalised
+    # for lacking formatting -- a clean plain header scores on content alone.
+    # Both tables are text labels over a fully numeric body (every column
+    # distinct -> content base 1.0), so neither needs formatting to be certain.
+    path = tmp_path / "mixed_style.xlsx"
+    make_workbook(
+        path,
+        {"S": {"cells": [
+            {"coord": "A1", "value": "Qty", "bold": True},
+            {"coord": "B1", "value": "Cost", "bold": True},
+            {"coord": "A2", "value": 1}, {"coord": "B2", "value": 10},
+            {"coord": "A3", "value": 2}, {"coord": "B3", "value": 20},
+            # second table, fully plain headers, identical shape
+            {"coord": "A6", "value": "Min"},
+            {"coord": "B6", "value": "Max"},
+            {"coord": "A7", "value": 3}, {"coord": "B7", "value": 30},
+            {"coord": "A8", "value": 4}, {"coord": "B8", "value": 40},
+        ]}},
+    )
+    regions = list(inspect_path(str(path)).iter_regions())
+    bold = next(r for r in regions if r.headers == ["Qty", "Cost"])
+    plain = next(r for r in regions if r.headers == ["Min", "Max"])
+    assert bold.has_header and plain.has_header
+    # the unstyled table is not penalised: identical confidence, both maxed
+    assert plain.confidence == bold.confidence == 1.0
+
+
 def test_inspect_sheet_selection_and_unknown_sheet(tmp_path):
     path = tmp_path / "multi.xlsx"
     make_workbook(
