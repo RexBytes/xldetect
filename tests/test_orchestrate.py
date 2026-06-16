@@ -85,9 +85,14 @@ def test_inspect_detects_multiple_regions(messy_workbook):
     report = inspect_path(messy_workbook)
     assert len(report.sheets) == 1
     sheet = report.sheets[0]
-    # banner region + two data tables
-    assert sheet.n_regions == 3
+    # two real data tables; the separated banner is classified decorative, not tabular
+    assert sheet.n_regions == 2
+    assert len(sheet.decorative_regions) == 1
+    assert sheet.decorative_regions[0].range_a1 == "A1:C1"
+    assert all(r.n_data_rows >= 1 for r in sheet.regions)
     assert len(sheet.merged_ranges) == 1
+    # the skip is surfaced to humans via a sheet note
+    assert any("decorative" in n for n in sheet.notes)
 
 
 def test_inspect_finds_the_real_table_with_header(messy_workbook):
@@ -126,3 +131,30 @@ def test_inspect_empty_sheet_has_no_regions(tmp_path):
     make_workbook(path, {"Blank": {"cells": []}})
     report = inspect_path(str(path))
     assert report.sheets[0].n_regions == 0
+
+
+def test_zero_data_region_excluded_and_recoverable_in_decorative(tmp_path):
+    # A header-only block (no data rows) is non-tabular: kept out of regions but
+    # available under decorative_regions.
+    path = tmp_path / "hdr_only.xlsx"
+    make_workbook(
+        path,
+        {"S": {"cells": [
+            {"coord": "A1", "value": "Name", "bold": True},
+            {"coord": "B1", "value": "Age", "bold": True},
+        ]}},
+    )
+    sheet = inspect_path(str(path)).sheets[0]
+    assert sheet.n_regions == 0
+    assert len(sheet.decorative_regions) == 1
+    assert sheet.decorative_regions[0].range_a1 == "A1:B1"
+
+
+def test_decorative_regions_do_not_produce_xlfilldown_plans(messy_workbook):
+    from xldetect.integration import workbook_to_xlfilldown_plans
+
+    report = inspect_path(messy_workbook)
+    plans = workbook_to_xlfilldown_plans(report)
+    # only the two real tables, never the banner
+    assert len(plans) == 2
+    assert all(p["header_row"] in (3, 8) for p in plans)

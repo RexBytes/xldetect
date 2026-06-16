@@ -114,19 +114,32 @@ def inspect_grid(
     raw_regions = detect_regions(
         grid.occupied, min_blank_rows=min_blank_rows, min_blank_cols=min_blank_cols
     )
-    regions = [
+    built = [
         build_region(grid, raw, header_threshold=header_threshold) for raw in raw_regions
     ]
+    # A region with no data rows carries no extractable table -- it is a
+    # decorative banner, a stray title, or a header with no body. Such regions
+    # are split off into ``decorative_regions`` so they neither pollute the
+    # tabular region list nor produce xlfilldown plans (see LIMITATIONS.md).
+    regions = [r for r in built if r.n_data_rows >= 1]
+    decorative = [r for r in built if r.n_data_rows < 1]
+
     merged = [
         MergedRegion(mr0, mc0, mr1, mc1, value=grid.value_at(mr0, mc0))
         for (mr0, mc0, mr1, mc1) in grid.merged
     ]
+    notes = []
+    if decorative:
+        ranges = ", ".join(r.range_a1 for r in decorative)
+        notes.append(f"{len(decorative)} decorative/no-data region(s) skipped: {ranges}")
     return SheetReport(
         sheet=grid.sheet,
         max_row=grid.max_row,
         max_col=grid.max_col,
         regions=regions,
+        decorative_regions=decorative,
         merged_ranges=merged,
+        notes=notes,
     )
 
 

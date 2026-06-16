@@ -22,6 +22,17 @@ from .orchestrate import inspect_path
 from .report import format_json, format_text
 
 
+def _positive_int(value: str) -> int:
+    """argparse type: accept only integers >= 1 (for blank-gap thresholds)."""
+    try:
+        n = int(value)
+    except ValueError:
+        raise argparse.ArgumentTypeError(f"expected an integer, got {value!r}")
+    if n < 1:
+        raise argparse.ArgumentTypeError(f"must be >= 1, got {n}")
+    return n
+
+
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="xldetect",
@@ -42,15 +53,15 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     inspect.add_argument(
         "--min-blank-rows",
-        type=int,
+        type=_positive_int,
         default=1,
-        help="Blank-row gap that separates stacked regions (default: 1).",
+        help="Blank-row gap that separates stacked regions (default: 1, min: 1).",
     )
     inspect.add_argument(
         "--min-blank-cols",
-        type=int,
+        type=_positive_int,
         default=1,
-        help="Blank-column gap that separates side-by-side regions (default: 1).",
+        help="Blank-column gap that separates side-by-side regions (default: 1, min: 1).",
     )
     inspect.add_argument(
         "--header-threshold",

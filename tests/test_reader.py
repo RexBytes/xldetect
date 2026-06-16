@@ -79,3 +79,21 @@ def test_load_grids_unknown_sheet_raises(tmp_path):
 
     with pytest.raises(ValueError):
         load_grids(str(path), sheets=["Ghost"])
+
+
+def test_load_grids_corrupt_file_raises_valueerror(tmp_path):
+    # A non-xlsx file (plain text with an .xlsx name) must surface as a clean
+    # ValueError, not a raw zipfile.BadZipFile / InvalidFileException traceback.
+    import pytest
+
+    bad = tmp_path / "fake.xlsx"
+    bad.write_text("this is not an excel file")
+    with pytest.raises(ValueError):
+        load_grids(str(bad))
+
+
+def test_load_grids_missing_file_raises_valueerror(tmp_path):
+    import pytest
+
+    with pytest.raises(ValueError):
+        load_grids(str(tmp_path / "nope.xlsx"))

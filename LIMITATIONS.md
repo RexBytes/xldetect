@@ -45,6 +45,20 @@ but are intentional. Each entry: **concern**, **decision**, **rationale**,
 - **Escape hatch:** Inspect the last row of `region` yourself (e.g. check for a
   bold row or a blank key column) before handing data downstream.
 
+### A header row with no data below is treated as decorative, not a table
+- **Concern:** A region that has a detected header (or a lone text/banner row) but
+  zero data rows is excluded from `regions` and placed in `decorative_regions`.
+- **Decision:** Classify any region with `n_data_rows == 0` as decorative/no-data
+  and keep it out of the tabular `regions` list (and out of xlfilldown plans).
+- **Rationale:** A zero-data region carries nothing extractable downstream, and a
+  separated banner or stray title is far more common than a genuinely empty,
+  header-only table. Distinguishing "empty table" from "decorative row" needs
+  semantics we do not have, so the structural rule (no data = not a table) is the
+  predictable choice and makes the "skip decorative rows" promise hold even when a
+  banner is separated from its table by a blank row.
+- **Escape hatch:** Read `SheetReport.decorative_regions` (same `Region` type) to
+  recover these, e.g. for schema-profiling an empty headered sheet.
+
 ### Formula cells with no cached value are invisible
 - **Concern:** A workbook authored programmatically and never opened in Excel has
   `None` for formula cells, so those cells are treated as blank.
@@ -83,24 +97,6 @@ but are intentional. Each entry: **concern**, **decision**, **rationale**,
   truth (e.g. "extract each region to its own sheet first").
 - **Escape hatch:** Split each region onto its own sheet/file before calling
   `xlfilldown`, or read `region.min_row/max_row/min_col/max_col` and slice yourself.
-
----
-
-## Cost-of-fix exceeds value
-
-### A decorative banner separated by a blank row becomes its own low-confidence region
-- **Concern:** A title in `A1` with a blank row 2 above the table surfaces as a
-  standalone region (with the banner mis-reported as its header), separate from
-  the table below.
-- **Decision:** Decorative trimming runs *within* a region only; a banner isolated
-  by blank rows is a separate region and is left in the output with low
-  `confidence` and `n_data_rows == 0`.
-- **Rationale:** Cross-region "is this lone block decorative?" reasoning would add
-  a whole second pass and new heuristics, while the signal callers actually need
-  is already present: such regions score low and have no data rows. The cleaner
-  implementation is not worth the added complexity and false-merge risk.
-- **Escape hatch:** Filter regions, e.g. `[r for r in report.iter_regions()
-  if r.n_data_rows >= 1 and r.confidence >= 0.5]`.
 
 ---
 

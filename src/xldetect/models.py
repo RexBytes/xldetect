@@ -127,11 +127,13 @@ class SheetReport:
     max_row: int = 0
     max_col: int = 0
     regions: list[Region] = field(default_factory=list)
+    decorative_regions: list[Region] = field(default_factory=list)
     merged_ranges: list[MergedRegion] = field(default_factory=list)
     notes: list[str] = field(default_factory=list)
 
     @property
     def n_regions(self) -> int:
+        """Number of *tabular* regions (those with at least one data row)."""
         return len(self.regions)
 
     def to_dict(self) -> dict:
@@ -141,6 +143,7 @@ class SheetReport:
             "max_col": self.max_col,
             "n_regions": self.n_regions,
             "regions": [r.to_dict() for r in self.regions],
+            "decorative_regions": [r.to_dict() for r in self.decorative_regions],
             "merged_ranges": [m.to_dict() for m in self.merged_ranges],
             "notes": list(self.notes),
         }
