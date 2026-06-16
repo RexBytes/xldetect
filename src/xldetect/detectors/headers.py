@@ -1,20 +1,21 @@
 """Header-row detection within a region.
 
 This module exists to decide whether the top row(s) of a region are column
-labels rather than data, and to extract those labels. It scores a candidate row
-in ``[0, 1]`` from four cues and compares the score against a threshold:
+labels rather than data, and to extract those labels. A candidate row gets a
+content score in ``[0, 1]`` from three cues, plus an additive style bonus:
 
 * **populated** -- fraction of the region's columns the row fills (headers are
   usually fully populated);
 * **text** -- fraction of the row's non-empty cells that are text;
 * **distinct** -- fraction of columns where the candidate cell's kind differs
-  from the dominant kind of the column body below it (labels over numbers/dates);
-* **style** -- fraction of non-empty cells carrying a formatting cue
-  (bold/fill/border/italic).
+  from the dominant kind of the column body below it (labels over numbers/dates).
 
-When the grid carries no style information at all, the style cue is dropped and
-its weight is redistributed across the content cues, so content-only grids are
-scored on their merits rather than penalised for missing styles.
+Formatting is treated as *corroborating* evidence that can only raise the score,
+never lower it. The style bonus is proportional to the *contrast* between the
+candidate row and the body below: how much more decorated (bold/fill/border/
+italic) the row is than its data. Uniform decoration (whole table bold) is not
+discriminating and earns no bonus; a plain header over a decorated body is never
+penalised. A clean header therefore scores the same whether or not it is styled.
 """
 
 from __future__ import annotations
@@ -30,9 +31,10 @@ from ..grid import (
 )
 from .regions import RawRegion
 
-# Scoring weights. Two profiles: with style evidence and without. Each sums to 1.
-_W_STYLED = {"populated": 0.25, "text": 0.30, "distinct": 0.25, "style": 0.20}
-_W_CONTENT = {"populated": 0.30, "text": 0.40, "distinct": 0.30}
+# Content weights sum to 1.0; the style bonus is added on top and the total is
+# capped at 1.0. Formatting can lift a borderline header but never sink a clean one.
+_W = {"populated": 0.30, "text": 0.40, "distinct": 0.30}
+_STYLE_BONUS = 0.20
 
 
 @dataclass
@@ -72,11 +74,27 @@ def _column_body_kinds(
     return out
 
 
+def _decorated_fraction(grid: Grid, rows, cols) -> float:
+    """Fraction of non-empty cells in the ``rows`` x ``cols`` block that are decorated."""
+    decorated = total = 0
+    for r in rows:
+        for c in cols:
+            if cell_kind(grid.value_at(r, c)) == KIND_EMPTY:
+                continue
+            total += 1
+            if grid.style_at(r, c).is_decorated():
+                decorated += 1
+    return decorated / total if total else 0.0
+
+
 def score_header_row(grid: Grid, region: RawRegion, row: int, body_row: int) -> float:
     """Score a single candidate ``row`` as a header, using the body below ``body_row``.
 
-    Returns a value in ``[0, 1]``. ``body_row`` is the first row treated as data
-    for the type-distinction cue (normally ``row + 1``).
+    Returns a value in ``[0, 1]``. The score is a content base (populated, text,
+    distinct-from-body) plus an additive style bonus proportional to how much more
+    decorated the candidate row is than the body (``body_row`` .. region end). The
+    bonus is clamped at zero (a less-decorated row is never penalised) and the
+    total is capped at 1.0. ``body_row`` is the first row treated as data.
     """
     cols = list(range(region.min_col, region.max_col + 1))
     n = len(cols)
@@ -104,28 +122,17 @@ def score_header_row(grid: Grid, region: RawRegion, row: int, body_row: int) -> 
             distinct += 1
     distinct_frac = distinct / comparable if comparable else 0.0
 
-    if grid.has_styles:
-        decorated = [
-            grid.style_at(row, c) for c, k in zip(cols, kinds) if k != KIND_EMPTY
-        ]
-        style_frac = (
-            sum(1 for s in decorated if s.is_decorated()) / len(decorated)
-            if decorated
-            else 0.0
-        )
-        w = _W_STYLED
-        return (
-            w["populated"] * populated
-            + w["text"] * text
-            + w["distinct"] * distinct_frac
-            + w["style"] * style_frac
-        )
-    w = _W_CONTENT
-    return (
-        w["populated"] * populated
-        + w["text"] * text
-        + w["distinct"] * distinct_frac
+    base = (
+        _W["populated"] * populated
+        + _W["text"] * text
+        + _W["distinct"] * distinct_frac
     )
+
+    header_dec = _decorated_fraction(grid, [row], cols)
+    body_dec = _decorated_fraction(grid, range(body_row, region.max_row + 1), cols)
+    style_contrast = max(0.0, header_dec - body_dec)
+
+    return min(1.0, base + _STYLE_BONUS * style_contrast)
 
 
 def _is_secondary_header(
