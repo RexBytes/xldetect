@@ -11,5 +11,13 @@
     "security": {"file": "tests/test_reader.py", "needles": ["corrupt", "BadZipFile"]},
     "docs": ["LIMITATIONS.md", "SKILL.md", "CONTRIBUTING.md", "README.md"]
   },
-  "panels": []
+  "panels": [
+    {
+      "id": "1",
+      "commits": ["5ea8a4c"],
+      "models": ["opus", "sonnet", "haiku"],
+      "findings": {"MEDIUM": 1},
+      "note": "reader.load_grids leaked raw KeyError/ParseError for zip-shaped-but-non-xlsx files (renamed .zip / corrupt [Content_Types].xml) instead of the promised ValueError, escaping the CLI as an uncaught traceback. Opus singleton; reproduced and fixed."
+    }
+  ]
 }
