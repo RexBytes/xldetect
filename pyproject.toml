@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "xldetect"
-version = "1.0.0"
+version = "1.0.1"
 description = "Structural detection of table-like data regions, headers, and merged cells in Excel worksheets."
 readme = "README.md"
 license = { file = "LICENSE" }

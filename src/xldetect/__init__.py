@@ -20,7 +20,7 @@ from .orchestrate import inspect_grid, inspect_path, region_confidence
 from .reader import build_grid, load_grids
 from .report import format_json, format_text
 
-__version__ = "1.0.0"
+__version__ = "1.0.1"
 
 __all__ = [
     "inspect_path",
