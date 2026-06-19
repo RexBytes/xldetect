@@ -85,6 +85,22 @@ def test_corrupt_workbook_returns_exit_code_1_without_traceback(tmp_path, capsys
     assert "Traceback" not in err
 
 
+def test_zip_renamed_to_xlsx_returns_exit_code_1_without_traceback(tmp_path, capsys):
+    # A plain .zip renamed to .xlsx (valid zip, no [Content_Types].xml) used to
+    # escape as a raw KeyError traceback through the CLI. It must exit 1 with the
+    # clean "xldetect: error:" message like any other unreadable workbook.
+    import zipfile
+
+    bad = tmp_path / "renamed.xlsx"
+    with zipfile.ZipFile(bad, "w") as z:
+        z.writestr("data/readme.txt", "just a renamed zip")
+    rc = main(["inspect", str(bad)])
+    assert rc == 1
+    err = capsys.readouterr().err
+    assert err.startswith("xldetect: error:")
+    assert "Traceback" not in err
+
+
 def test_valid_min_blank_rows_runs(tmp_path, capsys):
     path = _golden_workbook(tmp_path)
     assert main(["inspect", path, "--min-blank-rows", "2"]) == 0

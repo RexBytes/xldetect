@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import zipfile
 from pathlib import Path
+from xml.etree.ElementTree import ParseError
 
 import openpyxl
 from openpyxl.utils.exceptions import InvalidFileException
@@ -99,6 +100,14 @@ def load_grids(
     except FileNotFoundError as exc:
         raise ValueError(f"File not found: {path}") from exc
     except (InvalidFileException, zipfile.BadZipFile) as exc:
+        raise ValueError(
+            f"Not a readable .xlsx workbook ({path}): {exc}"
+        ) from exc
+    except (KeyError, ParseError) as exc:
+        # A structurally-valid zip that is not a real .xlsx: openpyxl raises
+        # KeyError when [Content_Types].xml is absent (e.g. a plain .zip renamed
+        # to .xlsx) and xml.etree's ParseError when that part is malformed
+        # (a truncated/corrupt Office file). Both are "wrong format / corrupt".
         raise ValueError(
             f"Not a readable .xlsx workbook ({path}): {exc}"
         ) from exc

@@ -97,3 +97,34 @@ def test_load_grids_missing_file_raises_valueerror(tmp_path):
 
     with pytest.raises(ValueError):
         load_grids(str(tmp_path / "nope.xlsx"))
+
+
+def test_load_grids_zip_without_content_types_raises_valueerror(tmp_path):
+    # A structurally-valid zip with no [Content_Types].xml -- e.g. a plain .zip
+    # renamed to .xlsx. openpyxl raises a raw KeyError here; load_grids must
+    # normalise it to ValueError like every other "wrong format" input, not leak
+    # a LookupError traceback to the caller / CLI.
+    import zipfile
+
+    import pytest
+
+    bad = tmp_path / "renamed.xlsx"
+    with zipfile.ZipFile(bad, "w") as z:
+        z.writestr("data/readme.txt", "just a renamed zip")
+    with pytest.raises(ValueError):
+        load_grids(str(bad))
+
+
+def test_load_grids_corrupt_content_types_raises_valueerror(tmp_path):
+    # A zip whose [Content_Types].xml is malformed -- a truncated/corrupt Office
+    # file. openpyxl raises xml.etree's ParseError (a SyntaxError); load_grids
+    # must normalise it to ValueError.
+    import zipfile
+
+    import pytest
+
+    bad = tmp_path / "corrupt.xlsx"
+    with zipfile.ZipFile(bad, "w") as z:
+        z.writestr("[Content_Types].xml", "<Types><broken")
+    with pytest.raises(ValueError):
+        load_grids(str(bad))
