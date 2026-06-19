@@ -18,6 +18,13 @@
       "models": ["opus", "sonnet", "haiku"],
       "findings": {"MEDIUM": 1},
       "note": "reader.load_grids leaked raw KeyError/ParseError for zip-shaped-but-non-xlsx files (renamed .zip / corrupt [Content_Types].xml) instead of the promised ValueError, escaping the CLI as an uncaught traceback. Opus singleton; reproduced and fixed."
+    },
+    {
+      "id": "2",
+      "commits": ["2acf741"],
+      "models": ["opus", "sonnet", "haiku"],
+      "findings": {"MEDIUM": 1, "LOW": 2},
+      "note": "Three singletons (haiku clean). MEDIUM (opus): _is_secondary_header counted a blank candidate cell as type-distinct, swallowing a first data row with an empty optional column as a stacked header. LOW (sonnet): --header-threshold out-of-range exited 1 (runtime) not 2 (usage); added _unit_float validator. LOW (sonnet): trim_decorative docstring promised 'returned unchanged' but keeps the last row -- corrected the docstring (the behaviour is right for detection)."
     }
   ]
 }
