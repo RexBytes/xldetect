@@ -62,3 +62,22 @@ def test_never_trims_region_out_of_existence():
     # body_is_wide is False (no row has >=2 logical cells), so nothing trimmed.
     assert res.region == region
     assert res.removed_rows == []
+
+
+def test_all_banner_region_keeps_last_row():
+    # Every row is a full-width merged banner. Trimming removes all but the last
+    # row (a region is never trimmed out of existence); the surviving header-only
+    # row carries no data and is later classified decorative. The last row is
+    # never stripped, so removed_rows never covers the whole region.
+    g = Grid(
+        values={
+            (1, 1): "T1", (1, 2): "T1", (1, 3): "T1",
+            (2, 1): "T2", (2, 2): "T2", (2, 3): "T2",
+            (3, 1): "T3", (3, 2): "T3", (3, 3): "T3",
+        },
+        merged=[(1, 1, 1, 3), (2, 1, 2, 3), (3, 1, 3, 3)],
+    )
+    res = trim_decorative(g, RawRegion(1, 3, 1, 3))
+    assert res.region == RawRegion(3, 3, 1, 3)  # last row kept
+    assert res.removed_rows == [1, 2]
+    assert res.region.max_row == 3

@@ -26,11 +26,27 @@ def _positive_int(value: str) -> int:
     """argparse type: accept only integers >= 1 (for blank-gap thresholds)."""
     try:
         n = int(value)
-    except ValueError:
-        raise argparse.ArgumentTypeError(f"expected an integer, got {value!r}")
+    except ValueError as err:
+        raise argparse.ArgumentTypeError(f"expected an integer, got {value!r}") from err
     if n < 1:
         raise argparse.ArgumentTypeError(f"must be >= 1, got {n}")
     return n
+
+
+def _unit_float(value: str) -> float:
+    """argparse type: accept only floats in [0, 1] (for the header threshold).
+
+    Validating here makes an out-of-range value a usage error (exit 2), like
+    ``_positive_int``, instead of surfacing as a runtime ``ValueError`` (exit 1)
+    from deep in ``detect_header``.
+    """
+    try:
+        f = float(value)
+    except ValueError as err:
+        raise argparse.ArgumentTypeError(f"expected a float, got {value!r}") from err
+    if not 0.0 <= f <= 1.0:
+        raise argparse.ArgumentTypeError(f"must be in [0, 1], got {f}")
+    return f
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -65,7 +81,7 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     inspect.add_argument(
         "--header-threshold",
-        type=float,
+        type=_unit_float,
         default=0.5,
         help="Minimum header score [0-1] to accept a header row (default: 0.5).",
     )

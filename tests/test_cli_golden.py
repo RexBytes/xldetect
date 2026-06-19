@@ -85,6 +85,22 @@ def test_corrupt_workbook_returns_exit_code_1_without_traceback(tmp_path, capsys
     assert "Traceback" not in err
 
 
+def test_zip_renamed_to_xlsx_returns_exit_code_1_without_traceback(tmp_path, capsys):
+    # A plain .zip renamed to .xlsx (valid zip, no [Content_Types].xml) used to
+    # escape as a raw KeyError traceback through the CLI. It must exit 1 with the
+    # clean "xldetect: error:" message like any other unreadable workbook.
+    import zipfile
+
+    bad = tmp_path / "renamed.xlsx"
+    with zipfile.ZipFile(bad, "w") as z:
+        z.writestr("data/readme.txt", "just a renamed zip")
+    rc = main(["inspect", str(bad)])
+    assert rc == 1
+    err = capsys.readouterr().err
+    assert err.startswith("xldetect: error:")
+    assert "Traceback" not in err
+
+
 def test_valid_min_blank_rows_runs(tmp_path, capsys):
     path = _golden_workbook(tmp_path)
     assert main(["inspect", path, "--min-blank-rows", "2"]) == 0
@@ -97,6 +113,23 @@ def test_invalid_min_blank_is_usage_error(tmp_path, bad):
     with pytest.raises(SystemExit) as exc:
         main(["inspect", path, "--min-blank-rows", bad])
     assert exc.value.code == 2  # argparse usage error
+
+
+@pytest.mark.parametrize("bad", ["2.0", "-0.1", "abc"])
+def test_invalid_header_threshold_is_usage_error(tmp_path, bad):
+    # An out-of-range/non-numeric --header-threshold is a usage error (exit 2),
+    # like --min-blank-rows -- not a runtime error (exit 1) leaking up from
+    # detect_header. Pins the documented exit-code contract.
+    path = _golden_workbook(tmp_path)
+    with pytest.raises(SystemExit) as exc:
+        main(["inspect", path, "--header-threshold", bad])
+    assert exc.value.code == 2
+
+
+@pytest.mark.parametrize("ok", ["0", "0.0", "1", "1.0", "0.5"])
+def test_valid_header_threshold_accepted(tmp_path, ok):
+    path = _golden_workbook(tmp_path)
+    assert main(["inspect", path, "--header-threshold", ok]) == 0
 
 
 def test_json_and_xlfilldown_are_mutually_exclusive(tmp_path):

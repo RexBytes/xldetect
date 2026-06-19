@@ -1,0 +1,44 @@
+{
+  "_comment": "Per-project config for scripts/readiness.py. See RELEASE_READINESS.md and CONTRIBUTING.md. Append one object per review panel to `panels`; each is {\"id\": \"A\", \"commits\": [\"<sha>\"], \"models\": [\"opus\", \"sonnet\", \"haiku\"], \"findings\": {\"HIGH\": 1, \"MEDIUM\": 2}, \"note\": \"...\"}. `findings` counts NEW confirmed defects by severity; an empty {} is a clean panel; `models` lists the distinct models that participated.",
+  "severity_weights": {"CRITICAL": 40, "HIGH": 10, "MEDIUM": 4, "LOW": 1, "NIT": 0.2},
+  "available_models": ["opus", "sonnet", "haiku"],
+  "tau": 2,
+  "coverage_target": 0.90,
+  "contract_coverage_estimate": 0.80,
+  "known_open_defects": 0,
+  "signals": {
+    "property_tests": {"file": "tests/test_regions_properties.py", "needle": "hypothesis"},
+    "security": {"file": "tests/test_reader.py", "needles": ["corrupt", "BadZipFile"]},
+    "docs": ["LIMITATIONS.md", "SKILL.md", "CONTRIBUTING.md", "README.md"]
+  },
+  "panels": [
+    {
+      "id": "1",
+      "commits": ["5ea8a4c"],
+      "models": ["opus", "sonnet", "haiku"],
+      "findings": {"MEDIUM": 1},
+      "note": "reader.load_grids leaked raw KeyError/ParseError for zip-shaped-but-non-xlsx files (renamed .zip / corrupt [Content_Types].xml) instead of the promised ValueError, escaping the CLI as an uncaught traceback. Opus singleton; reproduced and fixed."
+    },
+    {
+      "id": "2",
+      "commits": ["2acf741"],
+      "models": ["opus", "sonnet", "haiku"],
+      "findings": {"MEDIUM": 1, "LOW": 2},
+      "note": "Three singletons (haiku clean). MEDIUM (opus): _is_secondary_header counted a blank candidate cell as type-distinct, swallowing a first data row with an empty optional column as a stacked header. LOW (sonnet): --header-threshold out-of-range exited 1 (runtime) not 2 (usage); added _unit_float validator. LOW (sonnet): trim_decorative docstring promised 'returned unchanged' but keeps the last row -- corrected the docstring (the behaviour is right for detection)."
+    },
+    {
+      "id": "3",
+      "commits": ["9a8f795"],
+      "models": ["opus", "sonnet", "haiku"],
+      "findings": {},
+      "note": "First clean panel at full diversity. No new behavioural defects across all three slots; both Panel 2 fixes independently verified intact. Only two dismissed NIT-level observations: an orchestrate.py docstring orientation typo ('1xN' -> 'Nx1', corrected in 9a8f795, non-behavioural) and a self-consistent data_start_row=max_row+1 quirk on header-only decorative regions (no change). Opus's sub-agent degeneracy-penalty candidate was adjudicated and rejected (its fix would regress legitimate single-record tables)."
+    },
+    {
+      "id": "4",
+      "commits": [],
+      "models": ["opus", "sonnet", "haiku"],
+      "findings": {},
+      "note": "Second consecutive clean panel at full diversity, steered into surfaces panels 1-3 under-exercised: Unicode/exotic whitespace (ZWS, NBSP), _jsonable/to_dict over the full object graph (error cells, rich text, datetimes), text-vs-JSON renderer agreement, style detection (gradient/indexed fills), sheet-name/ordering edges, coordinate overflow, and end-to-end xlfilldown ingest. No new defects. Three reviewer observations all adjudicated non-defects (ZWS treated as text is consistent with the documented str.strip() contract; an embedded-newline header label is cosmetic; a null-byte filename still exits 1 correctly). No code changes -- HEAD identical to the reviewed commit."
+    }
+  ]
+}

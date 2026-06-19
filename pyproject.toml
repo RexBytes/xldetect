@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "xldetect"
-version = "1.0.0"
+version = "1.0.1"
 description = "Structural detection of table-like data regions, headers, and merged cells in Excel worksheets."
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -25,7 +25,7 @@ classifiers = [
 dependencies = ["openpyxl>=3.1"]
 
 [project.optional-dependencies]
-dev = ["pytest>=7.0", "pytest-cov", "hypothesis>=6.0", "xlfilldown>=1.0,<2"]
+dev = ["pytest>=7.0", "pytest-cov", "hypothesis>=6.0", "ruff", "mypy", "xlfilldown>=1.0,<2"]
 
 [project.scripts]
 xldetect = "xldetect.cli:main"
@@ -40,3 +40,18 @@ where = ["src"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["src"]
+
+[tool.ruff]
+# Scope ruff to the project's own code so the review-kit templates dropped into
+# the repo are never linted. Line length matches the existing house style.
+src = ["src"]
+line-length = 100
+extend-exclude = ["review-kit"]
+
+[tool.ruff.lint]
+select = ["E", "F", "B", "UP"]
+
+[tool.mypy]
+files = ["src"]
+python_version = "3.11"
+ignore_missing_imports = true  # openpyxl ships no type stubs

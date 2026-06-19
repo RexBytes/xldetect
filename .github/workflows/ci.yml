@@ -39,3 +39,39 @@ jobs:
         run: |
           pip install build
           python -m build
+
+  lint:
+    name: lint + type-check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - run: python -m pip install --upgrade pip
+      - run: pip install -e .[dev]
+      - run: ruff check src tests
+      - run: mypy
+
+  # Exercise the version-specific surfaces a single-version run is blind to:
+  # openpyxl's style/exception behaviour (reader.py) across its supported range,
+  # with the pinned xlfilldown integration installed. See CONTRIBUTING.md
+  # ("Mind the blind spots").
+  deps-matrix:
+    name: deps (openpyxl ${{ matrix.openpyxl }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        openpyxl: ["3.1.0", "3.1.5"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python -m pip install --upgrade pip
+      - run: pip install -e .[dev]
+      - run: pip install "openpyxl==${{ matrix.openpyxl }}"
+      - run: pytest -q

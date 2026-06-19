@@ -35,8 +35,9 @@ def region_confidence(
       count equals the most common (modal) data-row width.
 
     The blended score is multiplied by ``0.5`` when the region is degenerate
-    (fewer than one data row, or only a single column), because a 1xN strip or a
-    header with no data is rarely a table a caller wants to extract.
+    (fewer than one data row, or only a single column), because an Nx1 strip
+    (single column) or a header with no data is rarely a table a caller wants to
+    extract.
     """
     rows = range(region.min_row, region.max_row + 1)
     cols = range(region.min_col, region.max_col + 1)
@@ -69,7 +70,8 @@ def build_region(
     r = trim.region
     header = detect_header(grid, r, threshold=header_threshold)
 
-    data_start = (header.header_row + 1) if header.has_header else r.min_row
+    header_row = header.header_row
+    data_start = (header_row + 1) if header_row is not None else r.min_row
     n_data_rows = max(0, r.max_row - data_start + 1)
     conf = region_confidence(grid, r, header, data_start)
 
