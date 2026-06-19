@@ -1,0 +1,15 @@
+{
+  "_comment": "Per-project config for scripts/readiness.py. See RELEASE_READINESS.md and CONTRIBUTING.md. Append one object per review panel to `panels`; each is {\"id\": \"A\", \"commits\": [\"<sha>\"], \"models\": [\"opus\", \"sonnet\", \"haiku\"], \"findings\": {\"HIGH\": 1, \"MEDIUM\": 2}, \"note\": \"...\"}. `findings` counts NEW confirmed defects by severity; an empty {} is a clean panel; `models` lists the distinct models that participated.",
+  "severity_weights": {"CRITICAL": 40, "HIGH": 10, "MEDIUM": 4, "LOW": 1, "NIT": 0.2},
+  "available_models": ["opus", "sonnet", "haiku"],
+  "tau": 2,
+  "coverage_target": 0.90,
+  "contract_coverage_estimate": 0.80,
+  "known_open_defects": 0,
+  "signals": {
+    "property_tests": {"file": "tests/test_regions_properties.py", "needle": "hypothesis"},
+    "security": {"file": "tests/test_reader.py", "needles": ["corrupt", "BadZipFile"]},
+    "docs": ["LIMITATIONS.md", "SKILL.md", "CONTRIBUTING.md", "README.md"]
+  },
+  "panels": []
+}

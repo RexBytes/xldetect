@@ -5,7 +5,7 @@ from __future__ import annotations
 from conftest import make_workbook
 
 from xldetect.grid import CellStyle
-from xldetect.reader import build_grid, load_grids
+from xldetect.reader import load_grids
 
 
 def _grid(path, sheet="Sheet1"):

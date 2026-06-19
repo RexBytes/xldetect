@@ -26,8 +26,8 @@ def _positive_int(value: str) -> int:
     """argparse type: accept only integers >= 1 (for blank-gap thresholds)."""
     try:
         n = int(value)
-    except ValueError:
-        raise argparse.ArgumentTypeError(f"expected an integer, got {value!r}")
+    except ValueError as err:
+        raise argparse.ArgumentTypeError(f"expected an integer, got {value!r}") from err
     if n < 1:
         raise argparse.ArgumentTypeError(f"must be >= 1, got {n}")
     return n

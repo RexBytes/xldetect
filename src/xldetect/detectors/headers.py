@@ -113,7 +113,7 @@ def score_header_row(grid: Grid, region: RawRegion, row: int, body_row: int) -> 
 
     body_kinds = _column_body_kinds(grid, region, body_row)
     distinct = comparable = 0
-    for c, k in zip(cols, kinds):
+    for c, k in zip(cols, kinds, strict=True):
         bk = body_kinds.get(c, KIND_EMPTY)
         if bk == KIND_EMPTY or k == KIND_EMPTY:
             continue
@@ -159,7 +159,7 @@ def _is_secondary_header(
         return False
     body_kinds = _column_body_kinds(grid, region, row + 1)
     comparable = distinct = 0
-    for c, k in zip(cols, kinds):
+    for c, k in zip(cols, kinds, strict=True):
         bk = body_kinds.get(c, KIND_EMPTY)
         if bk == KIND_EMPTY:
             continue

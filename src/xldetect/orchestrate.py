@@ -69,7 +69,8 @@ def build_region(
     r = trim.region
     header = detect_header(grid, r, threshold=header_threshold)
 
-    data_start = (header.header_row + 1) if header.has_header else r.min_row
+    header_row = header.header_row
+    data_start = (header_row + 1) if header_row is not None else r.min_row
     n_data_rows = max(0, r.max_row - data_start + 1)
     conf = region_confidence(grid, r, header, data_start)
 
