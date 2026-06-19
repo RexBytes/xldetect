@@ -9,21 +9,22 @@ deliberate tradeoffs in `LIMITATIONS.md`; the release rubric in
 
 | Metric | Value |
 |---|---|
-| Multi-model review panels | 3 (3 models each: opus, sonnet, haiku) |
+| Multi-model review panels | 4 (3 models each: opus, sonnet, haiku) |
 | Confirmed findings (panels) | 4 — 0 CRITICAL, 0 HIGH, 2 MEDIUM, 2 LOW, 0 NIT |
-| Severity-weighted yield | 4.0 → 6.0 → 0.0 (panel 3 clean) |
+| Severity-weighted yield | 4.0 → 6.0 → 0.0 → 0.0 (two clean panels) |
 | Tests | 151 passing, 0 skipped; ruff + mypy clean; coverage 99% |
-| Release-Readiness Score | 91.4 / 100 |
-| Convergence | clean streak 1 of 2 required; confidence 0.63 |
-| Verdict | NOT RELEASABLE — RRS ≥ 90 and gates green; blocked only by the streak (need 1 more full-diversity clean panel) |
+| Release-Readiness Score | 94.3 / 100 |
+| Convergence | clean streak 2 of 2; confidence 0.86 |
+| Verdict | **RELEASABLE** — gates green, RRS ≥ 90, two consecutive full-diversity clean panels |
 
 The review kit (this file, `CONTRIBUTING.md`, `RELEASE_READINESS.md`,
 `release_readiness.json`, `scripts/readiness.py`, `panel_prompt.template.md`)
 was applied to the repository and the hard gates were wired up: `ruff` and
 `mypy` were added to the dev extras and configured in `pyproject.toml`, and CI
-runs tests/lint/type plus a dependency-version matrix. `scripts/readiness.py`
-reports green gates at 99% coverage; the score is held below the release bar by
-the convergence requirement, which is satisfied by running clean panels.
+runs tests/lint/type plus a dependency-version matrix. Four review panels then
+ran: panels 1–2 found and fixed four defects (2 MEDIUM, 2 LOW), and panels 3–4
+came back clean at full diversity. With gates green, RRS 94.3, and a 2-of-2
+clean streak, `scripts/readiness.py` now reports **RELEASABLE**.
 
 ## Trajectory
 
@@ -34,6 +35,7 @@ Severity weights: CRITICAL=40, HIGH=10, MEDIUM=4, LOW=1, NIT=0.2.
 | 1 | 1 MEDIUM | 4.0 | Exception-normalisation gap in the openpyxl boundary |
 | 2 | 1 MEDIUM, 2 LOW | 6.0 | Sibling-symmetry gap (header detection) + CLI/doc contract gaps |
 | 3 | none (clean) | 0.0 | First clean full-diversity panel; 2 NITs dismissed |
+| 4 | none (clean) | 0.0 | Second clean panel (fresh surfaces); RELEASABLE reached |
 
 ## What each panel found and how it was fixed
 
@@ -76,6 +78,18 @@ Severity weights: CRITICAL=40, HIGH=10, MEDIUM=4, LOW=1, NIT=0.2.
   candidate the slot adjudicated and rejected — the proposed fix would have
   halved the confidence of every legitimate single-record table. Weighted yield
   0.0; clean streak 1 of 2; RRS crosses 90 (91.4).
+- **4 — Second clean panel; release reached.** Full-diversity panel steered into
+  the surfaces panels 1–3 under-exercised: Unicode/exotic whitespace (zero-width
+  space, NBSP), `_jsonable`/`to_dict` over the full object graph (error cells,
+  rich text, datetimes), text-vs-JSON renderer agreement, style detection
+  (gradient/indexed fills), sheet-name and ordering edges, coordinate overflow to
+  Excel's limits, and an end-to-end `xlfilldown` ingest. No new defects from any
+  slot. Three reviewer observations were all adjudicated non-defects: ZWS treated
+  as text is consistent with the documented `str.strip()` contract; an
+  embedded-newline header label is cosmetic (no sanitisation promised); a
+  null-byte filename still exits 1 correctly. No code changes — HEAD stayed
+  identical to the reviewed commit. Weighted yield 0.0; **clean streak 2 of 2;
+  RRS 94.3 → RELEASABLE.**
 
 ## Standing themes
 

@@ -32,6 +32,13 @@
       "models": ["opus", "sonnet", "haiku"],
       "findings": {},
       "note": "First clean panel at full diversity. No new behavioural defects across all three slots; both Panel 2 fixes independently verified intact. Only two dismissed NIT-level observations: an orchestrate.py docstring orientation typo ('1xN' -> 'Nx1', corrected in 9a8f795, non-behavioural) and a self-consistent data_start_row=max_row+1 quirk on header-only decorative regions (no change). Opus's sub-agent degeneracy-penalty candidate was adjudicated and rejected (its fix would regress legitimate single-record tables)."
+    },
+    {
+      "id": "4",
+      "commits": [],
+      "models": ["opus", "sonnet", "haiku"],
+      "findings": {},
+      "note": "Second consecutive clean panel at full diversity, steered into surfaces panels 1-3 under-exercised: Unicode/exotic whitespace (ZWS, NBSP), _jsonable/to_dict over the full object graph (error cells, rich text, datetimes), text-vs-JSON renderer agreement, style detection (gradient/indexed fills), sheet-name/ordering edges, coordinate overflow, and end-to-end xlfilldown ingest. No new defects. Three reviewer observations all adjudicated non-defects (ZWS treated as text is consistent with the documented str.strip() contract; an embedded-newline header label is cosmetic; a null-byte filename still exits 1 correctly). No code changes -- HEAD identical to the reviewed commit."
     }
   ]
 }
