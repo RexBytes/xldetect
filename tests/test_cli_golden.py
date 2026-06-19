@@ -115,6 +115,23 @@ def test_invalid_min_blank_is_usage_error(tmp_path, bad):
     assert exc.value.code == 2  # argparse usage error
 
 
+@pytest.mark.parametrize("bad", ["2.0", "-0.1", "abc"])
+def test_invalid_header_threshold_is_usage_error(tmp_path, bad):
+    # An out-of-range/non-numeric --header-threshold is a usage error (exit 2),
+    # like --min-blank-rows -- not a runtime error (exit 1) leaking up from
+    # detect_header. Pins the documented exit-code contract.
+    path = _golden_workbook(tmp_path)
+    with pytest.raises(SystemExit) as exc:
+        main(["inspect", path, "--header-threshold", bad])
+    assert exc.value.code == 2
+
+
+@pytest.mark.parametrize("ok", ["0", "0.0", "1", "1.0", "0.5"])
+def test_valid_header_threshold_accepted(tmp_path, ok):
+    path = _golden_workbook(tmp_path)
+    assert main(["inspect", path, "--header-threshold", ok]) == 0
+
+
 def test_json_and_xlfilldown_are_mutually_exclusive(tmp_path):
     path = _golden_workbook(tmp_path)
     with pytest.raises(SystemExit):

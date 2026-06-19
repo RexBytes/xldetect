@@ -58,8 +58,10 @@ def trim_decorative(grid: Grid, region: RawRegion) -> TrimResult:
     region width (see :func:`xldetect.detectors.merged.is_banner_row`) or a
     "lone title" -- a row with at most one logical cell while some lower row in
     the region has two or more. Trimming stops at the first tabular-looking row.
-    If every row would be removed, the region is returned unchanged with a note,
-    so a region is never trimmed out of existence.
+    The loop never removes the region's last row, so a region is never trimmed
+    out of existence: if every row looks decorative, the final row is still kept
+    (and, carrying a header but no data below it, is later classified as a
+    no-data decorative region -- see ``LIMITATIONS.md``).
     """
     widths = [
         _logical_count(grid, r, region.min_col, region.max_col)

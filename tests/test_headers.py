@@ -181,6 +181,17 @@ def test_secondary_candidate_rejected_when_empty_row():
     assert res.header_rows == [1]
 
 
+def test_first_data_row_with_blank_optional_column_not_swallowed():
+    # Adversarial: a real first data row ("Zoe", blank Score) sits over a numeric
+    # Score body. A blank candidate cell must NOT count as type-distinct, or the
+    # row gets misread as a second header -- swallowing the record and taking the
+    # headers from it. Only the genuine header row 1 may be detected.
+    g, r = _region([["Name", "Score"], ["Zoe", None], ["Amy", 90], ["Ben", 80]])
+    res = detect_header(g, r)
+    assert res.header_rows == [1]
+    assert res.headers == ["Name", "Score"]
+
+
 def test_secondary_header_capped_at_max_header_rows():
     # Three all-text label rows over numeric data; default max_header_rows=2
     # must stop after two header rows even though row 3 also qualifies.

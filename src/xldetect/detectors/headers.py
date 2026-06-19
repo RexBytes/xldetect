@@ -161,7 +161,12 @@ def _is_secondary_header(
     comparable = distinct = 0
     for c, k in zip(cols, kinds, strict=True):
         bk = body_kinds.get(c, KIND_EMPTY)
-        if bk == KIND_EMPTY:
+        if bk == KIND_EMPTY or k == KIND_EMPTY:
+            # A column is "comparable" only when both the candidate and the body
+            # are populated -- matching score_header_row. A blank candidate cell
+            # over a populated body is NOT evidence of type-distinctness; counting
+            # it as distinct would let a first data row with an empty optional
+            # column masquerade as a stacked header and swallow that row.
             continue
         comparable += 1
         if k != bk:
