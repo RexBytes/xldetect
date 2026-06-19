@@ -25,6 +25,13 @@
       "models": ["opus", "sonnet", "haiku"],
       "findings": {"MEDIUM": 1, "LOW": 2},
       "note": "Three singletons (haiku clean). MEDIUM (opus): _is_secondary_header counted a blank candidate cell as type-distinct, swallowing a first data row with an empty optional column as a stacked header. LOW (sonnet): --header-threshold out-of-range exited 1 (runtime) not 2 (usage); added _unit_float validator. LOW (sonnet): trim_decorative docstring promised 'returned unchanged' but keeps the last row -- corrected the docstring (the behaviour is right for detection)."
+    },
+    {
+      "id": "3",
+      "commits": ["9a8f795"],
+      "models": ["opus", "sonnet", "haiku"],
+      "findings": {},
+      "note": "First clean panel at full diversity. No new behavioural defects across all three slots; both Panel 2 fixes independently verified intact. Only two dismissed NIT-level observations: an orchestrate.py docstring orientation typo ('1xN' -> 'Nx1', corrected in 9a8f795, non-behavioural) and a self-consistent data_start_row=max_row+1 quirk on header-only decorative regions (no change). Opus's sub-agent degeneracy-penalty candidate was adjudicated and rejected (its fix would regress legitimate single-record tables)."
     }
   ]
 }

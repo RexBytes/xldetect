@@ -9,13 +9,13 @@ deliberate tradeoffs in `LIMITATIONS.md`; the release rubric in
 
 | Metric | Value |
 |---|---|
-| Multi-model review panels | 2 (3 models each: opus, sonnet, haiku) |
+| Multi-model review panels | 3 (3 models each: opus, sonnet, haiku) |
 | Confirmed findings (panels) | 4 — 0 CRITICAL, 0 HIGH, 2 MEDIUM, 2 LOW, 0 NIT |
-| Severity-weighted yield | 4.0 → 6.0 (non-monotonic; panel 2 went deeper) |
+| Severity-weighted yield | 4.0 → 6.0 → 0.0 (panel 3 clean) |
 | Tests | 151 passing, 0 skipped; ruff + mypy clean; coverage 99% |
-| Release-Readiness Score | 71.0 / 100 |
-| Convergence | clean streak 0 of 2 required; confidence 0.00 |
-| Verdict | NOT RELEASABLE — RRS < 90 and surface not yet converged (panels 1–2 both found real defects) |
+| Release-Readiness Score | 91.4 / 100 |
+| Convergence | clean streak 1 of 2 required; confidence 0.63 |
+| Verdict | NOT RELEASABLE — RRS ≥ 90 and gates green; blocked only by the streak (need 1 more full-diversity clean panel) |
 
 The review kit (this file, `CONTRIBUTING.md`, `RELEASE_READINESS.md`,
 `release_readiness.json`, `scripts/readiness.py`, `panel_prompt.template.md`)
@@ -33,6 +33,7 @@ Severity weights: CRITICAL=40, HIGH=10, MEDIUM=4, LOW=1, NIT=0.2.
 |---|---|---|---|
 | 1 | 1 MEDIUM | 4.0 | Exception-normalisation gap in the openpyxl boundary |
 | 2 | 1 MEDIUM, 2 LOW | 6.0 | Sibling-symmetry gap (header detection) + CLI/doc contract gaps |
+| 3 | none (clean) | 0.0 | First clean full-diversity panel; 2 NITs dismissed |
 
 ## What each panel found and how it was fixed
 
@@ -64,6 +65,17 @@ Severity weights: CRITICAL=40, HIGH=10, MEDIUM=4, LOW=1, NIT=0.2.
   detection — returning it unchanged makes forward-filled banners look like a
   table); corrected the docstring. Each fix landed with a four-corners/contract
   regression test (suite 141 → 151).
+- **3 — First clean panel.** Full-diversity panel (opus/sonnet/haiku); no new
+  behavioural defects from any slot, and both Panel 2 fixes independently
+  re-verified intact. The only residue was two NIT-level observations, each
+  dismissed by its own reporter: an `orchestrate.py` docstring orientation typo
+  ("1xN" → "Nx1" for the single-column degeneracy penalty, corrected in
+  `9a8f795`, non-behavioural) and a self-consistent `data_start_row = max_row+1`
+  artifact on header-only decorative regions (callers check `n_data_rows` first;
+  no change). Opus also spawned a same-model sub-agent whose degeneracy-penalty
+  candidate the slot adjudicated and rejected — the proposed fix would have
+  halved the confidence of every legitimate single-record table. Weighted yield
+  0.0; clean streak 1 of 2; RRS crosses 90 (91.4).
 
 ## Standing themes
 
